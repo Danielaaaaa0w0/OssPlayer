@@ -23,7 +23,7 @@ public class MusicPlayer : MonoBehaviour
 
     private void Update()
     {
-        MusicName.text = CurrentPlaying.MetadataSection.Artist + " - " + CurrentPlaying.MetadataSection.Title;
+        MusicName.text = CurrentPlaying.MetadataSection.Title;
         if (!musicAudioSource.isPlaying && !HasManuallyPaused && PlayerData.HasIntroFinished)
         {
             try

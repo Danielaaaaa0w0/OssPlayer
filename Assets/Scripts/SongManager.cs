@@ -11,7 +11,7 @@ using UnityEngine.Networking;
 public class SongManager : MonoBehaviour
 {
     public static List<Song> Songs { get; set; }
-    private static IEnumerable<string> osuPaths;
+    private static IEnumerable<string> audioPaths;
     private static bool isScanningSongDirectory = false;
     private static SongManager instance;
 
@@ -35,25 +35,21 @@ public class SongManager : MonoBehaviour
             yield break;
         }
         Songs.Clear();
-        Songs.Add(Audio.Instance.Triangles);
         try
         {
-            osuPaths = Directory.EnumerateFiles(PlayerData.PersistentPlayerData.BeatmapLocation, "*.osu", SearchOption.AllDirectories);
+            audioPaths = Directory.EnumerateFiles(PlayerData.PersistentPlayerData.BeatmapLocation, "*.mp3", SearchOption.AllDirectories);
         }
         catch (ArgumentException e)
         {
             Debug.Log(e.Message);
         }
-        foreach (string path in osuPaths ?? Enumerable.Empty<string>())
+        foreach (string path in audioPaths ?? Enumerable.Empty<string>())
         {
-            Beatmap beatmap = BeatmapDecoder.Decode(path);
-            string songFolderPath = path.Substring(0, path.LastIndexOf('\\') + 1);
-            string audioPath = songFolderPath + beatmap.GeneralSection.AudioFilename;
-            string backgroundPath = songFolderPath + beatmap.EventsSection.BackgroundImage;
             try
             {
-                Song song = new Song(beatmap, Audio.Mp3ToAudioClip(File.ReadAllBytes(audioPath)));
+                Song song = new Song(Audio.Mp3ToAudioClip(File.ReadAllBytes(path)));
                 //song.Background.LoadImage(File.ReadAllBytes(backgroundPath));
+                song.MetadataSection.Title = path.Substring(path.LastIndexOf('\\') + 1).Replace(".mp3", "");
                 Songs.Add(song);
             }
             catch (FileNotFoundException e)
@@ -65,7 +61,6 @@ public class SongManager : MonoBehaviour
         }
         isScanningSongDirectory = false;
         SongList.Instance.UpdateSongList();
-        SongSelection.Instance.UpdateSongList();
     }
 
     public static List<Song> GetUniqueSongList()
